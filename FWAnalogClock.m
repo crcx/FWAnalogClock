@@ -20,21 +20,19 @@
 }
 
 
-- (float)getHour
+- (void)updateTime
 {
     NSDateFormatter *dateFormat = [[NSDateFormatter alloc] init];
     [dateFormat setDateFormat:@"hh"];
     NSString *hour = [dateFormat stringFromDate:[NSDate date]];
-    return [hour floatValue];
-}
+    NSLog(@"Hour: %@", hour);
+    [self setHour:[hour floatValue]];
 
-
-- (float)getMinute
-{
-    NSDateFormatter *dateFormat = [[NSDateFormatter alloc] init];
+    dateFormat = [[NSDateFormatter alloc] init];
     [dateFormat setDateFormat:@"mm"];
     NSString *minute = [dateFormat stringFromDate:[NSDate date]];
-    return [minute floatValue];
+    NSLog(@"Minute: %@", minute);
+    [self setMinute:[minute floatValue]];
 }
 
 
@@ -70,7 +68,7 @@
         float x = center.x + distance * cos(theta);
         float y = center.y + distance * sin(theta);
         
-        CGContextAddArc(ctx, x, y, 1.0, 0.0, M_PI * 2.0, YES);
+        CGContextAddArc(ctx, x, y, maxRadius / 80, 0.0, M_PI * 2.0, YES);
         CGContextStrokePath(ctx);
     }
 }
@@ -89,9 +87,10 @@
 {
     [[UIColor darkGrayColor] set];
     CGPoint center = [self findCenter];
+    float length = [self bounds].size.width / 5;
     float theta = (30 * M_PI / 180);
-    float x = center.x + 55.0 * cos((([self getHour] + [self getMinute]/60 + 1/3600) * theta) - M_PI/2);
-    float y = center.y + 55.0 * sin((([self getHour] + [self getMinute]/60 + 1/3600) * theta) - M_PI/2);
+    float x = center.x + length * cos((([self hour] + [self minute]/60 + 1/3600) * theta) - M_PI/2);
+    float y = center.y + length * sin((([self hour] + [self minute]/60 + 1/3600) * theta) - M_PI/2);
     [self drawHand:ctx from:x to:y width:5.0];
 }
 
@@ -100,15 +99,18 @@
 {
     [color set];
     CGPoint center = [self findCenter];
+    float length = [self bounds].size.width / 3;
     float theta = (6 * M_PI / 180);
-    float x = center.x + 80.0 * cos((([self getMinute] + 1/60) * theta) - M_PI/2);
-    float y = center.y + 80.0 * sin((([self getMinute] + 1/60) * theta) - M_PI/2);
+    float x = center.x + length * cos((([self minute] + 1/60) * theta) - M_PI/2);
+    float y = center.y + length * sin((([self minute] + 1/60) * theta) - M_PI/2);
     [self drawHand:ctx from:x to:y width:5.0];
 }
 
 
 - (void)drawRect:(CGRect)dirty
 {
+    NSLog(@"Updating...");
+    [self updateTime];
     CGContextRef ctx = UIGraphicsGetCurrentContext();
     [self drawClockFrame:ctx frameColor:[UIColor grayColor] markerColor:[UIColor grayColor]];
     [self drawHourHand:ctx withColor:[UIColor darkGrayColor]];
@@ -116,3 +118,4 @@
 }
 
 @end
+
